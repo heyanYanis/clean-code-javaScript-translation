@@ -20,7 +20,7 @@ Robert C. Martin's在他的《Clean Code》一书中，更新了`JavaScript`相�
 const yyyymmdstr = moment().format('YYYY/MM/DD');
 ```
 
-**Good:*:
+**Good:**
 
 ```javascript
 const cuurentDate = moment().format('YYYY/MM/DD');
