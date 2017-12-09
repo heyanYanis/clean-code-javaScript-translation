@@ -1695,4 +1695,289 @@ try {
   // OR do all three!
 }
 ```
+### 不要忽视`rejected promise`
+
+同样的，`promise`中的`reject`情况，也应该做相应的处理。
+
+**Bad:**
+
+```javascript
+getdata()
+  .then((data) => {
+    functionThatMightThrow(data);
+  })
+  .catch((error) => {
+    console.log(error);
+  });
+```
+
+**Good:**
+
+```javascript
+getdata()
+  .then((data) => {
+    functionThatMightThrow(data);
+  })
+  .catch((error) => {
+    // One option (more noisy than console.log):
+    console.error(error);
+    // Another option:
+    notifyUserOfError(error);
+    // Another option:
+    reportErrorToService(error);
+    // OR do all three!
+  });
+```
+
+## 格式化
+
+决定代码格式如何是一件主观的事情，就算这方面指定的规则很多，也没出现一条你必须遵守的又快严格的规则。不要争论到底该遵循那种格式化规则，这里有[很多工具](https://standardjs.com/rules.html)可以帮助你自动完成格式化，反复争论只会浪费你的金钱和时间。
+
+针对那些没有工具自动格式化的情况，下面列举了一些指导方案：
+
+### 大小写保持一致
+
+`JavaScript`是弱类型语言，所以大小写可以告诉你很多信息。这些规则都是主观制定的，所以你的团队可以选择一条你们想要的。一旦团队内部制定了统一的规范，请保持一致性。
+
+**Bad:**
+
+```javascript
+const DAYS_IN_WEEK = 7;
+const daysInMonth = 30;
+
+const songs = ['Back In Black', 'Stairway to Heaven', 'Hey Jude'];
+const Artists = ['ACDC', 'Led Zeppelin', 'The Beatles'];
+
+function eraseDatabase() {}
+function restore_database() {}
+
+class animal {}
+class Alpaca {}
+```
+
+**Good:**
+
+```javascript
+const DAYS_IN_WEEK = 7;
+const DAYS_IN_MONTH = 30;
+
+const SONGS = ['Back In Black', 'Stairway to Heaven', 'Hey Jude'];
+const ARTISTS = ['ACDC', 'Led Zeppelin', 'The Beatles'];
+
+function eraseDatabase() {}
+function restoreDatabase() {}
+
+class Animal {}
+class Alpaca {}
+```
+
+### 函数调用与函数定义应该放在较近的位置
+
+如果一个函数调用了另一个函数，请让这些函数定义在代码中距离保持较近。最好让函数调用者在被调用函数的上方。（我们阅读代码喜欢从上往下阅读，就像看新闻一样，所以这样做的好处是易于代码阅读）。
+
+**Bad:**
+
+```javascript
+class PerformanceReview {
+  constructor(employee) {
+    this.employee = employee;
+  }
+
+  lookupPeers() {
+    return db.lookup(this.employee, 'peers');
+  }
+
+  lookupManager() {
+    return db.lookup(this.employee, 'manager');
+  }
+
+  getPeerReviews() {
+    const peers = this.lookupPeers();
+    // ...
+  }
+
+  perfReview() {
+    this.getPeerReviews();
+    this.getManagerReview();
+    this.getSelfReview();
+  }
+
+  getManagerReview() {
+    const manager = this.lookupManager();
+  }
+
+  getSelfReview() {
+    // ...
+  }
+}
+
+const review = new PerformanceReview(employee);
+review.perfReview();
+```
+
+**Good:**
+
+```javascript
+class PerformanceReview {
+  constructor(employee) {
+    this.employee = employee;
+  }
+
+  perfReview() {
+    this.getPeerReviews();
+    this.getManagerReview();
+    this.getSelfReview();
+  }
+
+  getPeerReviews() {
+    const peers = this.lookupPeers();
+    // ...
+  }
+
+  lookupPeers() {
+    return db.lookup(this.employee, 'peers');
+  }
+
+  getManagerReview() {
+    const manager = this.lookupManager();
+  }
+
+  lookupManager() {
+    return db.lookup(this.employee, 'manager');
+  }
+
+  getSelfReview() {
+    // ...
+  }
+}
+
+const review = new PerformanceReview(employee);
+review.perfReview();
+```
+
+##代码注释
+
+### 只在业务逻辑复杂的地方进行注释
+
+代码注释并不是必须的，好的代码易于阅读，不需要进行注释。只有当业务逻辑复杂到一定程度之后，才需要注释。
+
+**Bad:**
+
+```javascript
+function hashIt(data) {
+  // The hash
+  let hash = 0;
+
+  // Length of string
+  const length = data.length;
+
+  // Loop through every character in data
+  for (let i = 0; i < length; i++) {
+    // Get character code.
+    const char = data.charCodeAt(i);
+    // Make the hash
+    hash = ((hash << 5) - hash) + char;
+    // Convert to 32-bit integer
+    hash &= hash;
+  }
+}
+```
+
+**Good:**
+
+```javascript
+function hashIt(data) {
+  let hash = 0;
+  const length = data.length;
+
+  for (let i = 0; i < length; i++) {
+    const char = data.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+
+    // Convert to 32-bit integer
+    hash &= hash;
+  }
+}
+```
+
+### 不要在代码库中遗留被注释掉的代码
+
+版本控制的存在是有原因的，让老代码留在历史记录当中。
+
+**Bad:**
+
+```javascript
+doStuff();
+// doOtherStuff();
+// doSomeMoreStuff();
+// doSoMuchStuff();
+```
+
+**Good:**
+
+```javascript
+doStuff();
+```
+
+### 不要遗留版本更新注释
+
+记住，使用版本控制功能。我们不需要废弃代码、注释代码、尤其是版本更新说明。使用`git log`来获取更新信息。
+
+**Bad:**
+
+```javascript
+/**
+ * 2016-12-20: Removed monads, didn't understand them (RM)
+ * 2016-10-01: Improved using special monads (JP)
+ * 2016-02-03: Removed type-checking (LI)
+ * 2015-03-14: Added combine with type-checking (JR)
+ */
+function combine(a, b) {
+  return a + b;
+}
+```
+
+**Good:**
+
+```javascript
+function combine(a, b) {
+  return a + b;
+}
+```
+
+### 避免位置标记
+
+位置标记通常只会增加麻烦，适当的采用缩进和格式化来构造视觉上的结构。
+
+**Bad:**
+
+```javascript
+////////////////////////////////////////////////////////////////////////////////
+// Scope Model Instantiation
+////////////////////////////////////////////////////////////////////////////////
+$scope.model = {
+  menu: 'foo',
+  nav: 'bar'
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// Action setup
+////////////////////////////////////////////////////////////////////////////////
+const actions = function() {
+  // ...
+};
+```
+
+**Good:**
+
+```javascript
+$scope.model = {
+  menu: 'foo',
+  nav: 'bar'
+};
+
+const actions = function() {
+  // ...
+};
+```
 
